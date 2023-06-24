@@ -69,7 +69,7 @@ type Profiler struct {
 	Iterations           int
 	Done                 chan bool
 	ProfilerData         chan map[int]*ProcessStats
-	Err                  chan bool
+	Err                  chan error
 }
 
 func NewProfiler(task string, processList []int, Iteration int) *Profiler {
@@ -79,7 +79,7 @@ func NewProfiler(task string, processList []int, Iteration int) *Profiler {
 		Iterations:           Iteration,
 		Done:                 make(chan bool, 1),
 		ProfilerData:         make(chan map[int]*ProcessStats, 1),
-		Err:                  make(chan bool, 1),
+		Err:                  make(chan error, 1),
 	}
 }
 
@@ -100,18 +100,28 @@ func NewProcessStats(pid int) *ProcessStats {
 }
 
 func (profiler *Profiler) Profile(method string, url string, headers []string, iteration int, interval int) error {
-	profiler.BurstRequests(method, url, headers, iteration)
+	go profiler.BurstRequests(method, url, headers, iteration)
 
 	if len(profiler.MonitoredProcessList) != 0 {
 		profiler.CpuMemProfiler(interval)
 	}
-	return nil
+
+	select {
+	case err := <-profiler.Err:
+		fmt.Printf("Stopping as API bombarding failed , err: %v \n", err)
+		return err
+	case <-profiler.Done:
+		fmt.Printf("%v number of requests sent to URL:%v \n", iteration, url)
+		return nil
+	}
+
 }
 
 func (profiler *Profiler) BurstRequests(method string, url string, headers []string, iteration int) {
 	httpClient, request, err := createHttpClient(method, url, headers)
 	if err != nil {
 		fmt.Printf("Failed create http client : %v \n", err)
+		profiler.Err <- err
 		return
 	}
 
@@ -120,7 +130,7 @@ func (profiler *Profiler) BurstRequests(method string, url string, headers []str
 		err := makeRequest(httpClient, request)
 		if err != nil {
 			fmt.Printf("API Failed , stopping profiling at count %v!!! : %v \n", i, err)
-			profiler.Err <- true
+			profiler.Err <- err
 			return
 		}
 	}
@@ -142,14 +152,14 @@ func (profiler *Profiler) CpuMemProfiler(intervalSec int) {
 		case <-profiler.Done:
 			fmt.Println("Profiling Done")
 			profiler.ProfilerData <- processStats
-			profiler.Err <- false
+			profiler.Err <- nil
 			return
 		default:
 			for _, pid := range profiler.MonitoredProcessList {
 				sysInfo, err := pidusage.GetStat(pid)
 				if err != nil {
 					fmt.Println("Could not get system Cpu Info: ", err)
-					profiler.Err <- true
+					profiler.Err <- err
 					profiler.ProfilerData <- processStats
 				}
 				cpuUsage, rssBytes = sysInfo.CPU, sysInfo.Memory
