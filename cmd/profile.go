@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"goburst/internal/profiler"
+	"goburst/pkg/visualizer"
 
 	"github.com/spf13/cobra"
 )
@@ -58,6 +59,8 @@ var profileCmd = &cobra.Command{
 		}
 
 		fmt.Println("Profiling Complete")
+		visualizer.Visualize("test", processStats)
+		fmt.Println("Visualizing Complete")
 	},
 }
 
