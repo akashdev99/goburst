@@ -28,11 +28,11 @@ func (profiler *Profiler) Profile(method string, url string, headers []string, i
 
 	select {
 	case err := <-profiler.apiBurster.Err:
-		profiler.statsProfiler.Ctx.Done()
+		profiler.statsProfiler.Stop()
 		fmt.Printf("Stopping API request bombarding due to error : %v \n", err)
 		return nil, err
 	case <-profiler.apiBurster.Done:
-		profiler.statsProfiler.Ctx.Done()
+		profiler.statsProfiler.Stop()
 		fmt.Printf("\n%v number of requests sent to URL \n", iteration)
 	}
 

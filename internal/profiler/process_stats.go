@@ -37,8 +37,8 @@ type StatsProfiler struct {
 	MonitoredProcessList []int
 	ProcessStats         chan map[int]*ProcessStats
 	Err                  chan error
-	Ctx                  context.Context
-	CancelFn             context.CancelFunc
+	ctx                  context.Context
+	cancelFn             context.CancelFunc
 }
 
 func NewStatsProfiler(pidList []int) *StatsProfiler {
@@ -48,8 +48,8 @@ func NewStatsProfiler(pidList []int) *StatsProfiler {
 		MonitoredProcessList: pidList,
 		ProcessStats:         make(chan map[int]*ProcessStats, 1),
 		Err:                  make(chan error, 1),
-		Ctx:                  ctx,
-		CancelFn:             cancelFn,
+		ctx:                  ctx,
+		cancelFn:             cancelFn,
 	}
 }
 
@@ -63,7 +63,7 @@ func (profiler *StatsProfiler) CpuMemProfiler(intervalSec int) {
 
 	for {
 		select {
-		case <-profiler.Ctx.Done():
+		case <-profiler.ctx.Done():
 			fmt.Println("Profiling Done")
 			profiler.ProcessStats <- processStats
 			return
@@ -79,11 +79,16 @@ func (profiler *StatsProfiler) CpuMemProfiler(intervalSec int) {
 				processStats[pid].Cpu.Add(int(cpuUsage))
 				processStats[pid].Mem.Add(int(rssBytes))
 			}
-			time.Sleep(time.Second * time.Duration(intervalSec))
+			time.Sleep(time.Millisecond * time.Duration(intervalSec))
+
 		}
 	}
 }
 
 func (profiler *StatsProfiler) IsSystemStatsProfiling() bool {
 	return len(profiler.MonitoredProcessList) != 0
+}
+
+func (profiler *StatsProfiler) Stop() {
+	profiler.cancelFn()
 }
