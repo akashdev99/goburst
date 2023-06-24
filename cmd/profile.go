@@ -47,7 +47,17 @@ var profileCmd = &cobra.Command{
 			fmt.Println("Error parsing --url flag :", err)
 		}
 
-		profiler := profiler.NewProfiler("test", method, url, headers, pidList, iteration)
+		visualize, err := cmd.Flags().GetBool("visualize")
+		if err != nil {
+			fmt.Println("Error parsing --url flag :", err)
+		}
+
+		taskName, err := cmd.Flags().GetString("name")
+		if err != nil {
+			fmt.Println("Error parsing --url flag :", err)
+		}
+
+		profiler := profiler.NewProfiler(taskName, method, url, headers, pidList, iteration)
 		processStats, err := profiler.Profile(method, url, headers, iteration, interval)
 		if err != nil {
 			fmt.Println("Profiling not complete due to error ", err)
@@ -57,10 +67,12 @@ var profileCmd = &cobra.Command{
 		if processStats != nil {
 			fmt.Println(processStats[pidList[0]].Cpu)
 		}
-
 		fmt.Println("Profiling Complete")
-		visualizer.Visualize("test", processStats)
-		fmt.Println("Visualizing Complete")
+
+		if visualize {
+			visualizer.Visualize(taskName, processStats)
+			fmt.Println("Generated Graphs")
+		}
 	},
 }
 
@@ -70,7 +82,8 @@ func init() {
 	profileCmd.Flags().StringP("url", "u", "", "Add API endpoint to be profiled")
 	profileCmd.Flags().StringSliceP("header", "H", []string{}, "List of headers to be added")
 	profileCmd.Flags().IntP("iteration", "I", 1, "Number of times the endpoint requests will be sent")
-	profileCmd.Flags().BoolP("visualize", "v", false, "Save the data captured in a line graph")
+	profileCmd.Flags().BoolP("visualize", "v", true, "Save the data captured in a line graph")
 	profileCmd.Flags().IntSliceP("pidlist", "p", []int{}, "List of processes to profile")
 	profileCmd.Flags().IntP("interval", "i", 1000, "Interval at which the profiling is done (milliseconds)")
+	profileCmd.Flags().StringP("name", "n", "Perf Graph", "Title for the graphs generated")
 }
