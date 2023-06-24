@@ -4,17 +4,10 @@ Copyright © 2023 NAME HERE akashnandan99@gmail.com
 package cmd
 
 import (
-	"crypto/tls"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strings"
-	"time"
-
-	"goburst/pkg/timeseries"
+	"goburst/internal/profiler"
 
 	"github.com/spf13/cobra"
-	"github.com/struCoder/pidusage"
 )
 
 // profileCmd represents the profile command
@@ -53,169 +46,19 @@ var profileCmd = &cobra.Command{
 			fmt.Println("Error parsing --url flag :", err)
 		}
 
-		profiler := NewProfiler("test", pidList, iteration)
-		if err := profiler.Profile(method, url, headers, iteration, interval); err != nil {
+		profiler := profiler.NewProfiler("test", method, url, headers, pidList, iteration)
+		processStats, err := profiler.Profile(method, url, headers, iteration, interval)
+		if err != nil {
 			fmt.Println("Profiling not complete due to error ", err)
 			return
 		}
 
+		if processStats != nil {
+			fmt.Println(processStats[pidList[0]].Cpu)
+		}
+
 		fmt.Println("Profiling Complete")
 	},
-}
-
-type Profiler struct {
-	TaskName             string
-	MonitoredProcessList []int
-	Iterations           int
-	Done                 chan bool
-	ProfilerData         chan map[int]*ProcessStats
-	Err                  chan error
-}
-
-func NewProfiler(task string, processList []int, Iteration int) *Profiler {
-	return &Profiler{
-		TaskName:             task,
-		MonitoredProcessList: processList,
-		Iterations:           Iteration,
-		Done:                 make(chan bool, 1),
-		ProfilerData:         make(chan map[int]*ProcessStats, 1),
-		Err:                  make(chan error, 1),
-	}
-}
-
-type ProcessStats struct {
-	Cpu          timeseries.TimeSeries
-	Mem          timeseries.TimeSeries
-	ReqProccesed timeseries.TimeSeries
-	Pid          int
-}
-
-func NewProcessStats(pid int) *ProcessStats {
-	return &ProcessStats{
-		Cpu:          *timeseries.NewTimeSeries(),
-		Mem:          *timeseries.NewTimeSeries(),
-		ReqProccesed: *timeseries.NewTimeSeries(),
-		Pid:          pid,
-	}
-}
-
-func (profiler *Profiler) Profile(method string, url string, headers []string, iteration int, interval int) error {
-	go profiler.BurstRequests(method, url, headers, iteration)
-
-	if len(profiler.MonitoredProcessList) != 0 {
-		profiler.CpuMemProfiler(interval)
-	}
-
-	select {
-	case err := <-profiler.Err:
-		fmt.Printf("Stopping as API bombarding failed , err: %v \n", err)
-		return err
-	case <-profiler.Done:
-		fmt.Printf("%v number of requests sent to URL:%v \n", iteration, url)
-		return nil
-	}
-
-}
-
-func (profiler *Profiler) BurstRequests(method string, url string, headers []string, iteration int) {
-	httpClient, request, err := createHttpClient(method, url, headers)
-	if err != nil {
-		fmt.Printf("Failed create http client : %v \n", err)
-		profiler.Err <- err
-		return
-	}
-
-	startTime := time.Now().Unix()
-	for i := 0; i < iteration; i++ {
-		err := makeRequest(httpClient, request)
-		if err != nil {
-			fmt.Printf("API Failed , stopping profiling at count %v!!! : %v \n", i, err)
-			profiler.Err <- err
-			return
-		}
-	}
-	endTime := time.Now().Unix()
-	fmt.Printf("%v:Total Time took to complete %v request = %v second \n", profiler.TaskName, iteration, endTime-startTime)
-	profiler.Done <- true
-}
-
-func (profiler *Profiler) CpuMemProfiler(intervalSec int) {
-	processStats := make(map[int]*ProcessStats)
-	for _, pid := range profiler.MonitoredProcessList {
-		processStats[pid] = NewProcessStats(pid)
-	}
-
-	var cpuUsage, rssBytes float64
-
-	for {
-		select {
-		case <-profiler.Done:
-			fmt.Println("Profiling Done")
-			profiler.ProfilerData <- processStats
-			profiler.Err <- nil
-			return
-		default:
-			for _, pid := range profiler.MonitoredProcessList {
-				sysInfo, err := pidusage.GetStat(pid)
-				if err != nil {
-					fmt.Println("Could not get system Cpu Info: ", err)
-					profiler.Err <- err
-					profiler.ProfilerData <- processStats
-				}
-				cpuUsage, rssBytes = sysInfo.CPU, sysInfo.Memory
-
-				processStats[pid].Cpu.Add(int(cpuUsage))
-				processStats[pid].Mem.Add(int(rssBytes))
-				processStats[pid].Mem.Add(profiler.Iterations)
-			}
-			time.Sleep(time.Second * time.Duration(intervalSec))
-		}
-	}
-}
-
-func createHttpClient(method string, url string, headers []string) (*http.Client, *http.Request, error) {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
-
-	if err != nil {
-		fmt.Println(err)
-		return nil, nil, err
-	}
-
-	var key, value string
-	for _, header := range headers {
-		key, value = getHeaderKeyValue(header)
-		req.Header.Add(key, value)
-	}
-
-	return client, req, nil
-}
-
-func getHeaderKeyValue(header string) (string, string) {
-	headerPair := strings.Split(header, ":")
-	return strings.TrimSpace(headerPair[0]), strings.TrimSpace(headerPair[1])
-}
-
-func makeRequest(client *http.Client, req *http.Request) error {
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	if res.StatusCode != 200 {
-		fmt.Printf("Response Body \n: %v\n", string(body))
-		return fmt.Errorf("response status code %d", res.StatusCode)
-	}
-	return nil
 }
 
 func init() {
