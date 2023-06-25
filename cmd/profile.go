@@ -4,8 +4,8 @@ Copyright © 2023 NAME HERE akashnandan99@gmail.com
 package cmd
 
 import (
-	"fmt"
 	"goburst/internal/profiler"
+	"goburst/pkg/cutefmt"
 	"goburst/pkg/visualizer"
 
 	"github.com/spf13/cobra"
@@ -19,59 +19,64 @@ var profileCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		url, err := cmd.Flags().GetString("url")
 		if err != nil {
-			fmt.Println("Error parsing --url flag :", err)
+			cutefmt.Errorf("Error parsing --url flag :", err)
+			return
 		}
 
 		headers, err := cmd.Flags().GetStringSlice("header")
 		if err != nil {
-			fmt.Println("Error parsing --url flag :", err)
+			cutefmt.Errorf("Error parsing --url flag :", err)
+			return
 		}
 
 		iteration, err := cmd.Flags().GetInt("iteration")
 		if err != nil {
-			fmt.Println("Error parsing --url flag :", err)
+			cutefmt.Errorf("Error parsing --url flag :", err)
+			return
 		}
 
 		method, err := cmd.Flags().GetString("method")
 		if err != nil {
-			fmt.Println("Error parsing --url flag :", err)
+			cutefmt.Errorf("Error parsing --url flag :", err)
+			return
 		}
 
 		pidList, err := cmd.Flags().GetIntSlice("pidlist")
 		if err != nil {
-			fmt.Println("Error parsing --url flag :", err)
+			cutefmt.Errorf("Error parsing --url flag :", err)
+			return
 		}
 
 		interval, err := cmd.Flags().GetInt("interval")
 		if err != nil {
-			fmt.Println("Error parsing --url flag :", err)
+			cutefmt.Errorf("Error parsing --url flag :", err)
+			return
 		}
 
 		visualize, err := cmd.Flags().GetBool("visualize")
 		if err != nil {
-			fmt.Println("Error parsing --url flag :", err)
+			cutefmt.Errorf("Error parsing --url flag :", err)
+			return
 		}
 
 		taskName, err := cmd.Flags().GetString("name")
 		if err != nil {
-			fmt.Println("Error parsing --url flag :", err)
+			cutefmt.Errorf("Error parsing --url flag :", err)
+			return
 		}
 
 		profiler := profiler.NewProfiler(taskName, method, url, headers, pidList, iteration)
 		processStats, err := profiler.Profile(method, url, headers, iteration, interval)
 		if err != nil {
-			fmt.Println("Profiling not complete due to error ", err)
+			cutefmt.Errorf("Profiling not complete due to error ", err)
 			return
 		}
 
-		if processStats != nil {
-			fmt.Println(processStats[pidList[0]].Cpu)
-		}
-		fmt.Println("Profiling Complete")
+		cutefmt.Successf("Profiling Complete")
 
 		if visualize {
 			visualizer.Visualize(taskName, processStats)
-			fmt.Println("Generated Graphs")
+			cutefmt.Successf("Generated Graphs")
 		}
 	},
 }

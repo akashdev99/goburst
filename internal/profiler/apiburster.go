@@ -56,7 +56,7 @@ func (profiler *ApiBurster) BurstRequests(method string, url string, headers []s
 	}
 
 	endTime := time.Now().Unix()
-	fmt.Printf("\nTotal Time took to complete %v request = %v second \n", iteration, endTime-startTime)
+	fmt.Printf("Total Time took to complete %v request = %v second \n", iteration, endTime-startTime)
 	profiler.Done <- true
 }
 

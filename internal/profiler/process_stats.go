@@ -2,7 +2,6 @@ package profiler
 
 import (
 	"context"
-	"fmt"
 	"goburst/pkg/timeseries"
 	"time"
 
@@ -64,7 +63,6 @@ func (profiler *StatsProfiler) CpuMemProfiler(intervalSec int) {
 	for {
 		select {
 		case <-profiler.ctx.Done():
-			fmt.Println("Profiling Done")
 			profiler.ProcessStats <- processStats
 			return
 		default:
