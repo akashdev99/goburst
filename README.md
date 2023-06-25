@@ -54,6 +54,17 @@ Examples:
 - Example 1: 
 goburst profile -u "xyz.com" -H "X-Auth-Access-Token:abcd" -I 1 -p "183" --visualize=false
 
+Output:
+-Succesfull Profiling & Visualization
+<img width="1053" alt="Screenshot 2023-06-25 at 4 37 08 PM" src="https://github.com/akashdev99/goburst/assets/41006458/2b25fc70-afc2-422d-836d-6a7ad50d29ae">
+
+-Failed Scenario
+<img width="1297" alt="Screenshot 2023-06-25 at 4 40 20 PM" src="https://github.com/akashdev99/goburst/assets/41006458/2f1af52f-8730-490a-bed9-22c7f1ff7555">
+
+Example of generated graphs/visualization:
+
+![Screenshot 2023-06-25 at 4 42 15 PM](https://github.com/akashdev99/goburst/assets/41006458/10cfda3c-cdf0-447a-b056-fa3ad79cb34c)
+
 # Command 2
 toolname version
 
