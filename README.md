@@ -56,7 +56,10 @@ goburst profile -u "xyz.com" -H "X-Auth-Access-Token:abcd" -I 1 -p "183" --visua
 
 Output:
 -Succesfull Profiling & Visualization
-<img width="1053" alt="Screenshot 2023-06-25 at 4 37 08 PM" src="https://github.com/akashdev99/goburst/assets/41006458/2b25fc70-afc2-422d-836d-6a7ad50d29ae">
+
+![Image 1](https://github-production-user-asset-6210df.s3.amazonaws.com/41006458/248551230-2b25fc70-afc2-422d-836d-6a7ad50d29ae.png)
+
+![248551230-2b25fc70-afc2-422d-836d-6a7ad50d29ae](https://github-production-user-asset-6210df.s3.amazonaws.com/41006458/249046675-9ab7a716-95b3-4bb5-b086-548be57e0462.jpg)
 
 -Failed Scenario
 <img width="1297" alt="Screenshot 2023-06-25 at 4 40 20 PM" src="https://github.com/akashdev99/goburst/assets/41006458/2f1af52f-8730-490a-bed9-22c7f1ff7555">
