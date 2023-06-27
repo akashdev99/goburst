@@ -67,7 +67,6 @@ func MakeLineChart(title string, XLabel string, description string, stats timese
 		AddSeries(XLabel, generateLineItems(stats)).
 		SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: false}))
 	line.Render(f)
-	fmt.Println("Succesfully Created Visualization for " + title)
 }
 
 func generateLineItems(timeSeries timeseries.TimeSeries) []opts.LineData {

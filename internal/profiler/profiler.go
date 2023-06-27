@@ -1,6 +1,7 @@
 package profiler
 
 import (
+	"fmt"
 	"goburst/pkg/cutefmt"
 )
 
@@ -29,7 +30,7 @@ func (profiler *Profiler) Profile(method string, url string, headers []string, i
 	select {
 	case err := <-profiler.apiBurster.Err:
 		profiler.statsProfiler.Stop()
-		cutefmt.Errorf("Stopping API request burst due to error : %v \n", err)
+		cutefmt.Errorf(fmt.Sprintf("Stopping API request burst due to error : %v \n", err))
 		return nil, err
 	case <-profiler.apiBurster.Done:
 		cutefmt.Successf("Api request burst Complete\n")
@@ -39,7 +40,7 @@ func (profiler *Profiler) Profile(method string, url string, headers []string, i
 	if profiler.statsProfiler.IsSystemStatsProfiling() {
 		select {
 		case err := <-profiler.statsProfiler.Err:
-			cutefmt.Errorf("Stopping System stats profiling due to error : %v \n", err)
+			cutefmt.Errorf(fmt.Sprintf("Stopping System stats profiling due to error : %v \n", err))
 			return nil, err
 		case profilerData = <-profiler.statsProfiler.ProcessStats:
 			cutefmt.Successf("System stats profiling Complete\n")

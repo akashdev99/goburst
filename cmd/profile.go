@@ -72,7 +72,7 @@ var profileCmd = &cobra.Command{
 			return
 		}
 
-		cutefmt.Successf("Profiling Complete")
+		cutefmt.Successf("Profiling Complete\n")
 
 		if visualize {
 			visualizer.Visualize(taskName, processStats)
