@@ -1,6 +1,10 @@
 # Go Burst
 
-Command Line interface to profile http servers while bombarding it with requests
+Command Line interface to profile processes while sending Api requests .
+
+This can help show the amount of CPU and Memory utilization of multiple processes while sendind API traffic . It can help understand how scalable the api endpoint is and how much resource utilization it will incurr when there is a lot of traffic . 
+
+Though the project is mainly aimed for profiling , it can also be used to simply send a lot of requests to a server . 
 
 ## Installation
 
@@ -80,4 +84,4 @@ Example of generated graphs/visualization:
 
 ## Configuration
 
-The binary is platform specific . Hence it needs to built on the that OS type itself to be compatible . 
+The binary is platform specific . Hence it needs to be built on the that OS type itself to be compatible . 
