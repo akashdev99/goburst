@@ -51,19 +51,9 @@ Flags:
   -v, --visualize        Save the data captured in a line graph (default true)
 
 Examples:
+
 - Example 1: 
 goburst profile -u "xyz.com" -H "X-Auth-Access-Token:abcd" -I 1 -p "183" --visualize=false
-
-Output:
--Succesfull Profiling & Visualization
-![success op](assets/success_out.png)
-
--Failure Scenario
-![success op](assets/fail_out.png)
-
-Example of generated graphs/visualization:
-
-![graph visual](assets/graph.png)
 
 # Command 2
 toolname version
@@ -74,6 +64,19 @@ Examples:
 - Example 1:
 goburst version
 ```
+
+## Output:
+-Succesfull Profiling & Visualization
+
+![success op](assets/sucess_out.png)
+
+-Failure Scenario
+![fail op](assets/fail_out.png)
+
+Example of generated graphs/visualization:
+
+![graph visual](assets/graph.png)
+
 
 ## Configuration
 
