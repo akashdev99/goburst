@@ -2,7 +2,7 @@
 
 Command Line interface to profile processes while sending Api requests .
 
-This can help show the amount of CPU and Memory utilization of multiple processes while sendind API traffic . It can help understand how scalable the api endpoint is and how much resource utilization it will incurr when there is a lot of traffic . 
+Here This can help show the amount of CPU and Memory utilization of multiple processes while sendind API traffic . It can help understand how scalable the api endpoint is and how much resource utilization it will incurr when there is a lot of traffic . 
 
 Though the project is mainly aimed for profiling , it can also be used to simply send a lot of requests to a server . 
 
